@@ -8,7 +8,7 @@ class MultimodalTransformer(nn.Module):
     """
     
     def __init__(self, input_dim, embed_dim, num_heads, num_layers, dropout=0.1):
-        super(FusionTransformer, self).__init__()
+        super(MultimodalTransformer, self).__init__()
         
         self.embed_dim = embed_dim
         
