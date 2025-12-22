@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from fusion_transformer.cross_modal_attention import CrossModalAttention
 
-class FusionTransformer(nn.Module):
+class MultimodalTransformer(nn.Module):
     """
     Fuses discretized latent embeddings from ECG, EDA, and ACC using Cross-Modal Transformers.
     """
