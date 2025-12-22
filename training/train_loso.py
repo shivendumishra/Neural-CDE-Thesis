@@ -56,8 +56,21 @@ def collate_paths(batch):
         
         for i, (s, t) in enumerate(zip(seqs, times)):
             L = len(s)
-            data_padded[i, :L, :] = torch.tensor(s, dtype=torch.float32)
-            times_padded[i, :L] = torch.tensor(t, dtype=torch.float32)
+            s_tensor = torch.tensor(s, dtype=torch.float32)
+            t_tensor = torch.tensor(t, dtype=torch.float32)
+            
+            data_padded[i, :L, :] = s_tensor
+            times_padded[i, :L] = t_tensor
+            
+            if L < max_len:
+                # LOCF: Carry the last observation forward to replace zero-padding
+                last_val = s_tensor[-1, :]
+                data_padded[i, L:, :] = last_val
+                
+                # LINEAR EXTENSION for Time: Continue time increments to keep the path monotonic
+                last_t = t_tensor[-1]
+                dt = (t_tensor[-1] - t_tensor[-2]) if L > 1 else 1.0
+                times_padded[i, L:] = last_t + torch.arange(1, max_len - L + 1).float() * dt
             
         return data_padded, times_padded
 
@@ -71,7 +84,12 @@ def collate_paths(batch):
     eda_data, eda_t = pad_and_stack(eda_seqs, [b['eda_time'] for b in batch])
     acc_data, acc_t = pad_and_stack(acc_seqs, [b['acc_time'] for b in batch])
     
-    # Augment with Intensity/Time Channel
+    # 1. Z-Score Normalization
+    ecg_data, _, _ = zscore_normalize(ecg_data)
+    eda_data, _, _ = zscore_normalize(eda_data)
+    acc_data, _, _ = zscore_normalize(acc_data)
+    
+    # 2. Augment with Intensity/Time Channel
     ecg_in = add_intensity_channel(ecg_data, ecg_t)
     eda_in = add_intensity_channel(eda_data, eda_t)
     acc_in = add_intensity_channel(acc_data, acc_t)
