@@ -13,10 +13,10 @@ data/
 *.pkl
 
 # Results
-results/
-*.png
-*.jpg
-*.jpeg
+# results/
+# *.png
+# *.jpg
+# *.jpeg
 
 # IDEs
 .vscode/

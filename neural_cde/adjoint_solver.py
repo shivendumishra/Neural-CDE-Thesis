@@ -19,23 +19,13 @@ def cde_solver(X, func, z0, t=None, adjoint=True, backend='torchdiffeq', **kwarg
         z_t: Latent trajectory.
     """
     
-    # Options for the ODE solver
-    # method='dopri5' is the default and requested.
-    # Switched to 'rk4' with fixed step for stability on real data
-    options = {'step_size': 0.1}
-    
-    # Note: torchcde.cdeint automatically handles the interaction between 
-    # the vector field output (matrix) and dX.
-    
-    # If adjoint=True, it uses O(1) memory during backprop (checkpointing).
-    
+    # Switched to 'dopri5' (adaptive) for faster integration
     z = torchcde.cdeint(X=X,
                         func=func,
                         z0=z0,
                         t=t,
-                        adjoint=adjoint,
-                        method='rk4',
-                        options=options,
+                        adjoint=False,
+                        method='dopri5',
                         **kwargs)
                         
     return z

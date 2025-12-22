@@ -10,8 +10,10 @@ class WESADDataset(Dataset):
     PyTorch Dataset for WESAD (Wearable Stress and Affect Detection) dataset.
     """
     
-    def __init__(self, subject_ids, data_root, window_size_sec=60, step_size_sec=10, valid_labels=[1, 2, 3]):
+    def __init__(self, subject_ids, data_root, window_size_sec=60, step_size_sec=10, valid_labels=[1, 2, 3], use_cache=False, cache_root=None):
         self.samples = []
+        self.use_cache = use_cache
+        self.cache_root = cache_root
         self.window_size_sec = window_size_sec
         self.win_ecg = int(window_size_sec * FS_ECG)
         self.win_eda = int(window_size_sec * FS_EDA)
@@ -19,80 +21,96 @@ class WESADDataset(Dataset):
         
         print(f"Loading WESAD Dataset for subjects: {subject_ids}", flush=True)
         
-        for sub_id in subject_ids:
-            # Handle both nested and flat structure
-            nested_path = os.path.join(data_root, f'S{sub_id}', f'S{sub_id}.pkl')
-            flat_path = os.path.join(data_root, f'S{sub_id}.pkl')
+        if use_cache and cache_root:
+            for sub_id in subject_ids:
+                sub_cache_dir = os.path.join(cache_root, f'S{sub_id}')
+                if os.path.exists(sub_cache_dir):
+                    files = sorted([os.path.join(sub_cache_dir, f) for f in os.listdir(sub_cache_dir) if f.endswith('.pt')])
+                    self.samples.extend(files)
+                    print(f"Subject S{sub_id}: Loaded {len(files)} cached samples.")
+                else:
+                    print(f"Warning: Cache for S{sub_id} not found at {sub_cache_dir}. Falling back to raw processing.")
+                    self._load_subject_raw(sub_id, data_root, window_size_sec, step_size_sec, valid_labels)
+        else:
+            for sub_id in subject_ids:
+                self._load_subject_raw(sub_id, data_root, window_size_sec, step_size_sec, valid_labels)
+
+    def _load_subject_raw(self, sub_id, data_root, window_size_sec, step_size_sec, valid_labels):
+        # Handle both nested and flat structure
+        nested_path = os.path.join(data_root, f'S{sub_id}', f'S{sub_id}.pkl')
+        flat_path = os.path.join(data_root, f'S{sub_id}.pkl')
+        
+        if os.path.exists(nested_path):
+            sub_path = nested_path
+        elif os.path.exists(flat_path):
+            sub_path = flat_path
+        else:
+            print(f"Warning: Data for S{sub_id} not found at {nested_path} or {flat_path}. Skipping.")
+            return
+        
+        print(f"Loading {sub_path} ...", flush=True)
+        try:
+            with open(sub_path, 'rb') as f:
+                data = pickle.load(f, encoding='latin1')
+            print(f"Loaded {sub_path}. Structuring...", flush=True)
+        except Exception as e:
+            print(f"Error loading {sub_path}: {e}")
+            return
             
-            if os.path.exists(nested_path):
-                sub_path = nested_path
-            elif os.path.exists(flat_path):
-                sub_path = flat_path
-            else:
-                print(f"Warning: Data for S{sub_id} not found at {nested_path} or {flat_path}. Skipping.")
-                continue
+        # Extract Signals
+        ecg_raw = data['signal']['chest']['ECG'].flatten()
+        eda_raw = data['signal']['wrist']['EDA'].flatten()
+        acc_raw = data['signal']['wrist']['ACC'] # (N, 3)
+        labels = data['label'].flatten()
+        
+        len_ecg = len(ecg_raw)
+        len_eda = len(eda_raw)
+        len_acc = len(acc_raw)
+        duration_sec = len_ecg / FS_ECG
+        
+        current_time = 0.0
+        count_wins = 0
+        
+        while current_time + window_size_sec <= duration_sec:
+            start_ecg = int(current_time * FS_ECG)
+            end_ecg = start_ecg + self.win_ecg
             
-            print(f"Loading {sub_path} ...", flush=True)
-            try:
-                with open(sub_path, 'rb') as f:
-                    data = pickle.load(f, encoding='latin1')
-                print(f"Loaded {sub_path}. Structuring...", flush=True)
-            except Exception as e:
-                print(f"Error loading {sub_path}: {e}")
-                continue
-                
-            # Extract Signals
-            ecg_raw = data['signal']['chest']['ECG'].flatten()
-            eda_raw = data['signal']['wrist']['EDA'].flatten()
-            acc_raw = data['signal']['wrist']['ACC'] # (N, 3)
-            labels = data['label'].flatten()
+            start_eda = int(current_time * FS_EDA)
+            end_eda = start_eda + self.win_eda
             
-            len_ecg = len(ecg_raw)
-            len_eda = len(eda_raw)
-            len_acc = len(acc_raw)
-            duration_sec = len_ecg / FS_ECG
+            start_acc = int(current_time * FS_ACC)
+            end_acc = start_acc + self.win_acc
             
-            current_time = 0.0
-            count_wins = 0
+            if end_ecg > len_ecg or end_eda > len_eda or end_acc > len_acc:
+                break
+                
+            label_window = labels[start_ecg:end_ecg]
+            if len(label_window) == 0:
+                break
+                
+            vals, counts = np.unique(label_window, return_counts=True)
+            maj_label = vals[np.argmax(counts)]
             
-            while current_time + window_size_sec <= duration_sec:
-                start_ecg = int(current_time * FS_ECG)
-                end_ecg = start_ecg + self.win_ecg
-                
-                start_eda = int(current_time * FS_EDA)
-                end_eda = start_eda + self.win_eda
-                
-                start_acc = int(current_time * FS_ACC)
-                end_acc = start_acc + self.win_acc
-                
-                if end_ecg > len_ecg or end_eda > len_eda or end_acc > len_acc:
-                    break
-                    
-                label_window = labels[start_ecg:end_ecg]
-                if len(label_window) == 0:
-                    break
-                    
-                vals, counts = np.unique(label_window, return_counts=True)
-                maj_label = vals[np.argmax(counts)]
-                
-                if maj_label in valid_labels:
-                    self.samples.append({
-                        'ecg': ecg_raw[start_ecg:end_ecg].astype(np.float32),
-                        'eda': eda_raw[start_eda:end_eda].astype(np.float32),
-                        'acc': acc_raw[start_acc:end_acc].astype(np.float32),
-                        'label': int(maj_label)
-                    })
-                    count_wins += 1
-                
-                current_time += step_size_sec
+            if maj_label in valid_labels:
+                self.samples.append({
+                    'ecg': ecg_raw[start_ecg:end_ecg].astype(np.float32),
+                    'eda': eda_raw[start_eda:end_eda].astype(np.float32),
+                    'acc': acc_raw[start_acc:end_acc].astype(np.float32),
+                    'label': int(maj_label)
+                })
+                count_wins += 1
             
-            print(f"Subject S{sub_id}: Extracted {count_wins} windows.", flush=True)
+            current_time += step_size_sec
+        
+        print(f"Subject S{sub_id}: Extracted {count_wins} windows.", flush=True)
             
     def __len__(self):
         return len(self.samples)
         
     def __getitem__(self, idx):
-        return self.samples[idx]
+        if self.use_cache and isinstance(self.samples[idx], str):
+            return torch.load(self.samples[idx], weights_only=False)
+        return self.preprocess_sample(self.samples[idx])
 
     def preprocess_sample(self, sample):
         # Imports here to avoid circular dependencies if any
