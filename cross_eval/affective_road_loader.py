@@ -46,9 +46,39 @@ class AffectiveRoadDataset(Dataset):
                 
                 duration_sec = len(eda_raw) / 4.0
                 
-                # Windowing
+                # Windowing with Ground Truth Labels
                 current_time = 0.0
+                
+                # Create a list of (start, end, label) from the row
+                # Mapping: Rest -> 0 (Baseline), City/Hwy -> 1 (Stress)
+                intervals = []
+                cols = annots.columns[1:]
+                for i in range(0, len(cols), 2):
+                    label_str = cols[i].split('_')[0]
+                    start = row[cols[i]]
+                    end = row[cols[i+1]]
+                    
+                    if label_str == 'Rest':
+                        l = 0
+                    elif label_str in ['City1', 'City2', 'Hwy']:
+                        l = 1
+                    else:
+                        continue # Skip 'Z' or others
+                    intervals.append((start, end, l))
+
                 while current_time + window_size_sec <= duration_sec:
+                    # Find label for this window
+                    # A window is valid if it's entirely within one interval
+                    win_label = None
+                    for start, end, l in intervals:
+                        if current_time >= start and (current_time + window_size_sec) <= end:
+                            win_label = l
+                            break
+                    
+                    if win_label is None:
+                        current_time += step_size_sec
+                        continue
+
                     start_idx_4hz = int(current_time * 4.0)
                     end_idx_4hz = start_idx_4hz + int(window_size_sec * 4.0)
                     start_idx_32hz = int(current_time * 32.0)
@@ -66,7 +96,7 @@ class AffectiveRoadDataset(Dataset):
                             'ibi_times': win_ibi_times,
                             'eda': eda_raw[start_idx_4hz:end_idx_4hz],
                             'acc': acc_raw[start_idx_32hz:end_idx_32hz],
-                            'label': 1 # Placeholder for City/Stress
+                            'label': win_label
                         })
                     current_time += step_size_sec
             except Exception as e:
@@ -91,12 +121,19 @@ class AffectiveRoadDataset(Dataset):
             f = extract_acc_features(w)
             acc_feats.append([f['acc_mean'], f['acc_var'], f['acc_energy'], f['acc_entropy']])
             
+        # Compute Coefficients for CDE
+        import torchcde
+        from normalization.intensity_channel import add_intensity_channel
+        
+        def build_coeffs(data, times):
+            d_tensor = torch.tensor(data, dtype=torch.float32).unsqueeze(0)
+            t_tensor = torch.tensor(times, dtype=torch.float32).unsqueeze(0)
+            d_in = add_intensity_channel(d_tensor, t_tensor)
+            return torchcde.natural_cubic_coeffs(d_in).squeeze(0)
+            
         return {
-            'ecg_seq': sample['ibi'].reshape(-1, 1).astype(np.float32),
-            'ecg_time': sample['ibi_times'].astype(np.float32),
-            'eda_seq': np.stack([phasic, tonic], axis=1).astype(np.float32),
-            'eda_time': (np.arange(len(phasic))/4.0).astype(np.float32),
-            'acc_seq': np.array(acc_feats).astype(np.float32),
-            'acc_time': np.arange(len(acc_feats)).astype(np.float32),
+            'ecg_coeffs': build_coeffs(sample['ibi'].reshape(-1, 1), sample['ibi_times']),
+            'eda_coeffs': build_coeffs(np.stack([phasic, tonic], axis=1), np.arange(len(phasic))/4.0),
+            'acc_coeffs': build_coeffs(np.array(acc_feats), np.arange(len(acc_feats))),
             'label': sample['label']
         }

@@ -2,6 +2,7 @@ import torch
 import os
 import sys
 import numpy as np
+from tqdm import tqdm
 
 # Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,39 +38,56 @@ def run_cross_inference():
         print("No samples found in AffectiveRoad.")
         return
         
+    from torch.utils.data import DataLoader
+    from training.train_loso import collate_paths
+    
+    # Use batch size 16 for fast inference
+    loader = DataLoader(dataset, batch_size=16, shuffle=False, collate_fn=collate_paths)
+    
     timeline = generate_fixed_timeline(0, 60, 1.0).to(device)
-    labels_map = {0: "Baseline", 1: "Stress", 2: "Amusement"}
     
-    print("\n--- Cross-Dataset Inference Results ---")
-    print(f"{'Sample':<10} | {'Predicted Emotion':<20}")
-    print("-" * 35)
+    print("\n--- Cross-Dataset Evaluation on Affective Road ---")
+    print(f"Total samples found: {len(dataset)}")
     
-    # Test first 10 samples
-    for i in range(min(10, len(dataset))):
-        sample = dataset[i]
-        
-        # Build Splines with Intensity Channel
-        ecg_t = torch.tensor(sample['ecg_seq']).unsqueeze(0)
-        eda_t = torch.tensor(sample['eda_seq']).unsqueeze(0)
-        acc_t = torch.tensor(sample['acc_seq']).unsqueeze(0)
-        
-        ecg_time = torch.tensor(sample['ecg_time'])
-        eda_time = torch.tensor(sample['eda_time'])
-        acc_time = torch.tensor(sample['acc_time'])
-        
-        ecg_in = add_intensity_channel(ecg_t, ecg_time.unsqueeze(0))
-        eda_in = add_intensity_channel(eda_t, eda_time.unsqueeze(0))
-        acc_in = add_intensity_channel(acc_t, acc_time.unsqueeze(0))
-        
-        ecg_p = torchcde.CubicSpline(torchcde.hermite_cubic_coefficients_with_backward_differences(ecg_in, ecg_time)).to(device)
-        eda_p = torchcde.CubicSpline(torchcde.hermite_cubic_coefficients_with_backward_differences(eda_in, eda_time)).to(device)
-        acc_p = torchcde.CubicSpline(torchcde.hermite_cubic_coefficients_with_backward_differences(acc_in, acc_time)).to(device)
-        
-        with torch.no_grad():
+    y_true = []
+    y_pred = []
+    
+    model.eval()
+    with torch.no_grad():
+        for batch in tqdm(loader, desc="Evaluating"):
+            ecg_p = batch['ecg_path'].to(device)
+            eda_p = batch['eda_path'].to(device)
+            acc_p = batch['acc_path'].to(device)
+            labels = batch['label'].to(device)
+            
             logits = model(ecg_p, eda_p, acc_p, timeline)
             _, predicted = torch.max(logits, 1)
             
-        print(f"Sample {i+1:<3} | {labels_map[predicted.item()]:<20}")
+            y_true.extend(labels.cpu().numpy())
+            y_pred.extend(predicted.cpu().numpy())
+
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    
+    correct = (y_true == y_pred).sum()
+    total = len(y_true)
+    accuracy = 100 * correct / total
+    
+    print(f"\n{'='*40}")
+    print(f" FINAL RESULTS (Affective Road)")
+    print(f"{'='*40}")
+    print(f"Total Samples:  {total}")
+    print(f"Correct:        {correct}")
+    print(f"Accuracy:       {accuracy:.2f}%")
+    print(f"{'='*40}")
+    
+    from sklearn.metrics import classification_report
+    print("\nClassification Report:")
+    target_names = ["Baseline", "Stress", "Amusement"]
+    present_labels = sorted(list(set(y_true) | set(y_pred)))
+    labels_to_show = [target_names[l] for l in present_labels]
+    
+    print(classification_report(y_true, y_pred, target_names=labels_to_show, labels=present_labels))
 
 if __name__ == "__main__":
     run_cross_inference()
