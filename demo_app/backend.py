@@ -185,4 +185,4 @@ def predict(sample_id):
 
 if __name__ == '__main__':
     init_model()
-    app.run(debug=False, port=5000, threaded=False)
+    app.run(debug=True, port=5000, threaded=False)
