@@ -4,15 +4,6 @@ from neural_cde.cde_vector_field import CDEVectorField
 from neural_cde.adjoint_solver import cde_solver
 
 class NeuralCDE(nn.Module):
-    """
-    Neural Controlled Differential Equation Model.
-    
-    Path: raw_path -> Spline Integration -> Latent Trajectory
-    
-    Note: The input to forward() here is the Continuous Path object (Spline), 
-    not the raw tensor. This separation allows the Path Construction to be handled 
-    separately as per the block diagram.
-    """
     
     def __init__(self, input_channels, hidden_dim, output_channels=None):
         super(NeuralCDE, self).__init__()
