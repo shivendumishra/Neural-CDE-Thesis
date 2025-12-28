@@ -1,23 +1,23 @@
-# Virtual Environment
-.venv/
-venv/
-env/
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.dvi
 
-# Python Cache
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Data (Very Large)
-data/
-*.pkl
-
-# Results
-# results/
-# *.png
-# *.jpg
-# *.jpeg
-
-# IDEs
+# VS Code settings
 .vscode/
-.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Datasets (Too large for GitHub)
+data/
