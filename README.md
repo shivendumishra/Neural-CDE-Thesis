@@ -17,6 +17,8 @@ Traditional emotion recognition models (RNNs, LSTMs) struggle with **irregularly
 *   ✅ **Robustness to missing data** (up to 30% drop-out).
 *   ✅ **Superior accuracy** (91.2% on WESAD dataset) compared to discrete-time baselines.
 
+> **⚠️ Note**: This repository represents **personal research work** conducted as part of a Master's Thesis. The findings and methodology are currently **under review** and are intended for future publication in a peer-reviewed journal. Please treat this as a pre-print / work-in-progress.
+
 ---
 
 ## 🚀 Key Features
