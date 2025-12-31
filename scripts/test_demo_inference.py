@@ -6,6 +6,7 @@ import numpy as np
 # Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PROJECT_ROOT)
+sys.path.append(os.path.join(PROJECT_ROOT, 'src'))
 
 from training.train_loso import FullPipelineModel
 from training.wesad_dataset import WESADDataset
@@ -20,7 +21,7 @@ def test_inference():
     config = {'hidden_dim': 16, 'num_heads': 4, 'num_layers': 2}
     model = FullPipelineModel(config).to(device)
     
-    weights_path = os.path.join(PROJECT_ROOT, 'cross_eval', 'wesad_model.pth')
+    weights_path = os.path.join(PROJECT_ROOT, 'scripts', 'cross_eval', 'wesad_model.pth')
     if os.path.exists(weights_path):
         model.load_state_dict(torch.load(weights_path, map_location=device))
         model.eval()

@@ -3,6 +3,7 @@ import sys
 
 current = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(current)
+sys.path.append(os.path.join(current, 'src'))
 
 print(f"CWD: {os.getcwd()}")
 print(f"Path: {sys.path}")
