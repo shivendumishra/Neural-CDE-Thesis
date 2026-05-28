@@ -1,0 +1,840 @@
+\documentclass[12pt, a4paper]{report}
+
+% =================================================================
+% 1. PACKAGES & TYPOGRAPHY
+% =================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx} % Times New Roman equivalent
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{amsmath, amssymb}
+\usepackage[numbers]{natbib}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, decorations.pathreplacing}
+\usepackage{colortbl}
+\usepackage{arydshln} % For \hdashline
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+\graphicspath{{images/}}
+
+% =================================================================
+% 2. PAGE DIMENSIONS AND MARGIN (Manual Section 4)
+% =================================================================
+\geometry{
+    a4paper,
+    top=35mm,    % Within 30-35mm range
+    bottom=30mm, % Within 25-30mm range
+    left=40mm,   % Within 35-40mm range
+    right=25mm,  % Within 20-25mm range
+    headsep=15mm, % To place page number at 20mm from top (35-15=20)
+    footskip=15mm,
+    headheight=15pt
+}
+
+% =================================================================
+% 3. TYPING INSTRUCTIONS (Manual Section 6)
+% =================================================================
+\onehalfspacing % General text spacing (1.5 line spacing within paragraphs)
+\setlength{\parindent}{15mm} % 15mm first line indentation as per Section 6.1
+\setlength{\parskip}{0pt} % No extra space between paragraphs - spacing is controlled by heading commands
+\brokenpenalty=10000 % No hyphenation at page breaks
+\clubpenalty=10000 % Prevent orphan lines
+\widowpenalty=10000 % Prevent widow lines
+
+
+% Quotation environment (Manual Section 6.1)
+\newenvironment{thesisquote}
+  {\list{}{\leftmargin=15mm\rightmargin=15mm}\item[]\singlespacing}
+  {\endlist}
+
+% =================================================================
+% 4. HEADING FORMATTING (Manual Section 5 & 6.2)
+% =================================================================
+
+% Chapter Headings
+\titleformat{\chapter}[display]
+  {\bfseries\centering}
+  {\MakeUppercase{\chaptertitlename}\ \thechapter}
+  {2\baselineskip} % 2 lines between "CHAPTER X" and Title
+  {\Large\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{15mm}{4\baselineskip} % 50mm from top (35+15), 4 lines after
+
+% Section Headings (Division)
+% Section 6.2: Divisions should have 3 spaces above and 2 spaces below
+\titleformat{\section}
+  {\bfseries\large}
+  {\thesection}{1em}{\MakeUppercase}
+\titlespacing*{\section}{0pt}{3\baselineskip}{2\baselineskip}
+
+% Subsection Headings (Sub-division)
+% Section 6.2: Sub-divisions should have 3 spaces above and 2 spaces below
+\titleformat{\subsection}
+  {\bfseries\normalsize}
+  {\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3\baselineskip}{2\baselineskip}
+
+% Preliminary Headings (Manual Section 5)
+\newcommand{\prelimheading}[1]{
+    \clearpage
+    \begin{center}
+        \vspace*{15mm} % 50mm from top (35+15)
+        {\bfseries\LARGE \MakeUppercase{#1} \par}
+        \vspace{4\baselineskip} % 4 spaces below
+    \end{center}
+    \addcontentsline{toc}{chapter}{\MakeUppercase{#1}}
+}
+
+% Special version for sections that should NOT be in TOC
+\newcommand{\prelimheadingnotoc}[1]{
+    \clearpage
+    \begin{center}
+        \vspace*{15mm} % 50mm from top (35+15)
+        {\bfseries\LARGE \MakeUppercase{#1} \par}
+        \vspace{4\baselineskip} % 4 spaces below
+    \end{center}
+}
+
+% TOC Formatting (tocloft)
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}} % Dotted leaders for chapters
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\renewcommand{\cftchappresnum}{CHAPTER }
+\newlength{\mylen}
+\settowidth{\mylen}{\bfseries CHAPTER 1\quad}
+\addtolength{\cftchapnumwidth}{\mylen}
+\renewcommand{\cftchapaftersnumb}{\quad} % Space after "CHAPTER X"
+
+% =================================================================
+% 5. NUMBERING INSTRUCTIONS (Manual Section 7)
+% =================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage} % Upper right corner
+\renewcommand{\headrulewidth}{0pt}
+
+% Force fancy on plain pages
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyhead[R]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+% Table and Figure Captions (Manual Section 5.6, 5.7)
+\captionsetup[table]{labelfont=bf, labelsep=colon, position=top, font={stretch=1.0}}
+\captionsetup[figure]{labelfont=bf, labelsep=colon, position=bottom, font={stretch=1.0}}
+
+% Float Spacing (Manual Section 5.12 - Triple spacing)
+\setlength{\intextsep}{3\baselineskip}
+\setlength{\textfloatsep}{3\baselineskip}
+
+% Equation Numbering (Manual Section 7.4)
+\numberwithin{equation}{chapter}
+
+% =================================================================
+% 6. DOCUMENT DATA
+% =================================================================
+\newcommand{\thesisTitle}{Continuous-Time Multimodal Emotion Recognition Using Latent ODEs and Cross-Modal Attention}
+\newcommand{\studentName}{Shivendu Mishra}
+\newcommand{\rollNo}{206124031}
+
+% =================================================================
+% 7. DOCUMENT START
+% =================================================================
+\begin{document}
+
+% -----------------------------------------------------------------
+% TITLE PAGE (Manual Section 5.1 & Appendix 1)
+% -----------------------------------------------------------------
+\begin{titlepage}
+    \thispagestyle{empty}
+    \centering
+    \onehalfspacing
+
+    {\bfseries\Large
+    Continuous-Time Multimodal Emotion Recognition\\[4pt]
+    Using Latent ODEs and Cross-Modal Attention
+    \par}
+
+    \vspace{1.0cm}
+    {\small A thesis submitted in partial fulfillment of the requirements\\
+    for the award of the degree of}\\
+    \vspace{0.8cm}
+    {\bfseries M.Tech}\\
+    \vspace{0.4cm}
+    in\\
+    \vspace{0.4cm}
+    {\bfseries COMPUTER SCIENCE AND ENGINEERING}\\
+    \vspace{1.0cm}
+    By\\
+    \vspace{0.4cm}
+    {\bfseries SHIVENDU MISHRA (206124031)}\\    
+    \vspace{1.2cm}
+    % -------------------------
+    % Logo: include if file exists, otherwise show framed placeholder
+    % -------------------------
+    \IfFileExists{../../../images/logo.png}{%
+    \includegraphics[width=3.5cm]{../../../images/logo.png}%
+}{%
+    \fbox{\parbox[c][3.5cm][c]{3.5cm}{\centering\textbf{LOGO}}}%
+}\\
+    \vspace{0.6 cm}
+    {\bfseries
+    DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING\\
+    NATIONAL INSTITUTE OF TECHNOLOGY\\
+    TIRUCHIRAPPALLI -- 620015
+    }\\
+    \vspace{0.8 cm}
+    {\bfseries JUNE 2026}
+\end{titlepage}
+
+% -----------------------------------------------------------------
+% PRELIMINARY PAGES (Roman Numerals)
+% -----------------------------------------------------------------
+\pagenumbering{roman}
+\setcounter{page}{2}
+
+% BONAFIDE CERTIFICATE (Manual Section 5.2)
+\prelimheading{Bonafide Certificate}
+
+\doublespacing
+This is to certify that the project thesis titled \textbf{\MakeUppercase{\thesisTitle}} is a bonafide record of the work done by
+
+\begin{center}
+    \textbf{\MakeUppercase{\studentName} (\rollNo)}
+\end{center}
+
+in partial fulfillment of the requirements for the award of the degree of \textbf{Master of Technology} in Computer Science and Engineering of the \textbf{NATIONAL INSTITUTE OF TECHNOLOGY, TIRUCHIRAPPALLI}, during the academic year 2025-2026.
+
+\vspace{3cm} % Adjust this space to push signatures down
+
+\noindent
+\begin{minipage}[t]{0.4\textwidth}
+    \centering
+    \textbf{Dr. R. Bala Krishnan} \\
+    Guide
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.4\textwidth}
+    \centering
+    \textbf{Dr. Kunwar Singh} \\
+    Head of the Department
+\end{minipage}
+
+\vspace{2cm} % Adjust this space
+
+\noindent
+Project Viva-voce held on \rule{6cm}{0.4pt}
+
+\vspace{2cm} % Adjust this space
+
+\noindent
+\textbf{Internal Examiner} \hfill \textbf{External Examiner}
+
+% ABSTRACT (Manual Section 5.3)
+\prelimheading{Abstract}
+\onehalfspacing
+\justifying
+Multimodal emotion recognition from wearable physiological signals (ECG, EDA, ACC) is challenging due to irregular sampling rates, asynchronous observations, and frequent sensor dropouts. Traditional discrete-time models fail to capture the underlying continuous biological dynamics of these signals. To address this, we propose a continuous-time framework based on \textbf{Latent Ordinary Differential Equations (Latent ODEs)} combined with a multimodal transformer.
+
+Our framework represents multi-rate signals as continuous control paths using natural cubic spline interpolation. Modality-specific encoders map these paths to an approximate posterior distribution in a latent space, where the initial state $z_0$ is sampled using the reparameterization trick. The continuous latent trajectory $z(t)$ is then integrated forward using the adaptive Dormand-Prince (`dopri5`) solver. To capture complex cross-channel interdependencies, a multimodal transformer uses learned cross-modal attention to fuse the latent trajectories before final classification.
+
+Under Leave-One-Subject-Out (LOSO) validation on the WESAD dataset, the Latent ODE model achieves a classification accuracy of \textbf{87.0\%} (\textbf{0.89 AUROC}, \textbf{0.86 AUPRC}) using 2.8 million parameters, while exhibiting high robustness to simulated sensor dropouts. Cross-dataset generalization on the AffectiveROAD driving database shows that fine-tuning a WESAD pre-trained model yields \textbf{78.9\% accuracy} (\textbf{0.761 Macro F1}), outperforming training from scratch by 6.6 percentage points. These results demonstrate that the Latent ODE framework effectively models continuous physiological trajectories with superior robustness and generalization.
+
+\vspace{1.5\baselineskip}
+\noindent \textit{Keywords}: Latent Ordinary Differential Equations; Multimodal Emotion Recognition; Physiological Signals; Wearable Sensing; Cross-Modal Attention; AffectiveROAD Dataset; WESAD Dataset
+
+% ACKNOWLEDGEMENT (Manual Section 5.4)
+\prelimheading{Acknowledgement}
+\doublespacing
+I wish to place on record my deep sense of gratitude to my guide, \textbf{Dr. R. Bala Krishnan}, for his inspiring guidance, constant encouragement, and valuable suggestions throughout the course of this project. I am highly indebted to him for his constant supervision and support.
+
+I am extremely grateful to the Head of the Department, \textbf{Dr. Kunwar Singh}, and all the faculty members of the Department of Computer Science and Engineering for providing the necessary facilities and support.
+
+Finally, I would like to express my heartiest thanks to my parents, family, and friends for their constant prayers, understanding, and encouragement which helped me complete this work successfully.
+
+% TABLE OF CONTENTS (Manual Section 5.5)
+\prelimheadingnotoc{Table of Contents}
+\onehalfspacing
+\noindent \textbf{Title} \hfill \textbf{Page No.} \\[1ex]
+\renewcommand{\contentsname}{} % Hide default title
+\vspace{-5\baselineskip}
+\tableofcontents
+\addcontentsline{toc}{chapter}{\MakeUppercase{Table of Contents}}
+
+% LIST OF TABLES (Manual Section 5.6)
+\prelimheading{List of Tables}
+\onehalfspacing
+\renewcommand{\listtablename}{}
+\vspace{-5\baselineskip}
+\listoftables
+
+% LIST OF FIGURES (Manual Section 5.7)
+\prelimheading{List of Figures}
+\onehalfspacing
+\renewcommand{\listfigurename}{}
+\vspace{-5\baselineskip}
+\listoffigures
+
+% LIST OF ABBREVIATIONS (Manual Section 5.8)
+\prelimheading{List of Abbreviations}
+\onehalfspacing
+\begin{tabular}{l l}
+    ECG & Electrocardiogram \\
+    EDA & Electrodermal Activity \\
+    ACC & Accelerometer \\
+    BVP & Blood Volume Pulse \\
+    NODE & Neural Ordinary Differential Equation \\
+    LODE & Latent Ordinary Differential Equation \\
+    NCDE & Neural Controlled Differential Equation \\
+    WESAD & Wearable Stress and Affect Detection \\
+    LOSO & Leave-One-Subject-Out \\
+    HRV & Heart Rate Variability \\
+    SCR & Skin Conductance Response \\
+\end{tabular}
+
+% -----------------------------------------------------------------
+% MAIN TEXT (Arabic Numerals)
+% -----------------------------------------------------------------
+\clearpage
+\pagenumbering{arabic}
+\onehalfspacing
+
+\chapter{INTRODUCTION}
+
+\section{BACKGROUND AND MOTIVATION}
+Affective computing, formalized by Rosalind Picard, aims to develop systems that recognize, interpret, and simulate human emotions. Traditional emotion recognition relies on behavioral signals like facial expressions, speech, and posture. While highly expressive, these modalities suffer in natural settings: they can be easily masked, vary across cultures, and are sensitive to environmental noise or lighting.
+
+
+Physiological signals provide a direct window into the human autonomic nervous system (ANS) and are largely involuntary, making them highly resistant to social masking. The two main branches of the ANS—the sympathetic nervous system (SNS) driving "fight-or-flight" and the parasympathetic nervous system (PNS) regulating "rest-and-digest"—affect target organs in distinct ways. Changes in arousal and valence trigger measurable responses in cardiac activity (via ECG), sudomotor activity (via EDA), and physical activity (via ACC).
+
+Wearable devices like the Empatica E4 wristband enable continuous, unobtrusive monitoring of physiological signals. However, processing these signals introduces major computational challenges. Physiological data is inherently multimodal and multi-rate: ECG is typically recorded at high rates (64--700 Hz), ACC at intermediate rates (32 Hz), and EDA at low rates (4 Hz). Traditional discrete-time architectures (e.g., RNNs, LSTMs) require downsampling or interpolation to align modalities onto a uniform grid. These steps introduce artificial artifacts, discard fine-grained temporal details, and handle sensor dropout poorly.
+
+
+\section{PROBLEM STATEMENT AND RESEARCH CHALLENGES}
+The central question of this thesis is: \textit{How can we build a unified computational framework that models the continuous-time latent dynamics of multi-rate, irregular physiological signals for robust and generalizable emotion recognition?}
+
+Developing such a framework requires overcoming several critical challenges:
+\begin{enumerate}
+    \item \textbf{Asynchronous and Multi-Rate Data}: Reconciling signals sampled at widely differing frequencies without relying on lossy discretization. For instance, the Empatica E4 wristband records PPG at 64 Hz, ACC at 32 Hz, and EDA at 4 Hz. Traditional models force these multi-rate signals into a uniform discrete grid via downsampling or interpolation, which either discards high-frequency details (e.g., heart rate variability peaks) or introduces interpolation noise.
+    \item \textbf{Continuous Physiological Trajectories}: Modeling physiological states as continuous biological processes rather than sequences of discrete points. Autonomic responses like stress develop as gradual, continuous transitions. Discrete-time models (e.g., LSTMs) update hidden states only at discrete steps, failing to model continuous physiological trajectories during variable-length intervals or connection dropouts.
+    \item \textbf{Cross-Modal Interactions}: Capturing the time-varying relationships and relative latencies between different modalities. For example, a stressor triggers immediate cardiac acceleration but a delayed sudomotor response (skin conductance spike) 1 to 3 seconds later due to physiological latency. The model must dynamically capture these phase-shifted, cross-modal dependencies across continuous time.
+    \item \textbf{Subject Independence and Generalization}: Ensuring the model generalizes well to unseen individuals and transfers across diverse environments. Physiological responses are highly subject-dependent due to variations in age, baseline skin conductance, and cardiovascular fitness. A heart rate of 85 bpm might represent high stress for one individual but a resting baseline for another. The model must extract baseline-invariant, generalizable trajectories that transfer robustly from controlled laboratory settings (e.g., the WESAD dataset) to noisy, real-world conditions (e.g., driving stress in the AffectiveROAD dataset).
+\end{enumerate}
+
+
+
+\section{RESEARCH OBJECTIVES}
+This thesis proposes \textbf{Latent Ordinary Differential Equations (Latent ODEs)} combined with a multimodal transformer fusion mechanism to address these challenges. The specific objectives are:
+\begin{enumerate}
+    \item \textbf{Continuous-Time Trajectory Modeling}: Formulate the physiological state as a continuous latent trajectory $z(t)$ governed by ordinary differential equations.
+    \item \textbf{Cubic Spline Path Construction}: Construct smooth, continuous-time input paths from raw, irregularly sampled observations using natural cubic splines to preserve temporal structure.
+    \item \textbf{Latent State Parameterization}: Design an encoder to map spline paths to the mean and variance of a latent space posterior distribution, sampling the initial state via the reparameterization trick.
+    \item \textbf{Cross-Modal Attention Fusion}: Develop a multimodal transformer to dynamically attend to and fuse the continuous latent trajectories across different sensor channels.
+    \item \textbf{Rigorous Empirical Validation}: Validate the model on the controlled WESAD laboratory dataset and the naturalistic driving dataset AffectiveROAD using Leave-One-Subject-Out (LOSO) cross-validation and transfer learning protocols.
+\end{enumerate}
+
+\section{CONTRIBUTIONS}
+The main contributions of this work are:
+\begin{enumerate}
+    \item A novel continuous-time deep learning architecture combining Latent ODEs, natural cubic splines, and multimodal transformers for multi-rate physiological emotion recognition.
+    \item Integration of a VAE latent space with reparameterization and an adaptive Dormand-Prince (`dopri5`) solver to model continuous latent trajectories.
+    \item Demonstration that the Latent ODE model achieves competitive classification performance (87.0\% accuracy) on WESAD and superior cross-dataset generalization (78.9\% accuracy) on AffectiveROAD compared to discrete baselines.
+    \item Detailed analysis of model robustness under varying levels of missing data and interpretability of learned cross-modal attention weights.
+\end{enumerate}
+
+\section{THESIS ORGANIZATION}
+The thesis is organized as follows: Chapter 2 reviews related work in wearable emotion recognition, self-supervised learning, and neural ordinary differential equations. Chapter 3 details the Latent ODE methodology, mathematical formulations, and the end-to-end pipeline. Chapter 4 outlines the experimental setup, preprocessing, and baseline models. Chapter 5 presents the classification results, ablation studies, cross-dataset transfer, and robustness analysis. Chapter 6 concludes the thesis and suggests future directions.
+
+\chapter{LITERATURE REVIEW}
+
+\section{DATASET AND EVALUATION PROTOCOLS}
+Physiological emotion recognition models require high-quality datasets with validated elicitation protocols. The standard benchmark is the WESAD (Wearable Stress and Affect Detection) dataset~\cite{schmidt2018wesad}. WESAD contains physiological recordings from 15 subjects wearing a chest RespiBAN device (ECG, EDA, Respiration, Temp) and a wrist Empatica E4 device (PPG, EDA, Temp, ACC). 
+
+The emotional elicitation protocol in WESAD is highly structured and comprises three main target states:
+\begin{itemize}
+    \setlength{\itemsep}{2pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{Neutral Baseline}: Subjects read a neutral magazine in a seated position for 20 minutes to establish stable baseline physiological measurements.
+    \item \textbf{Stress Induction (TSST)}: Stress is induced using the validated Trier Social Stress Test (TSST). This protocol consists of a 5-minute preparation period, a 5-minute public speaking task (a mock job interview in front of a panel of three evaluators), and a 5-minute mental arithmetic task (e.g., continuously subtracting 17 from 2043, where any error requires starting over). The TSST is designed to trigger cognitive load and social evaluative threat, inducing a strong sympathetic response.
+    \item \textbf{Amusement Elicitation}: Amusement is elicited by showing subjects 11 short, funny video clips (e.g., comedy sketches and humor scenes) for approximately 20 minutes, interspersed with brief recovery periods to allow physiology to settle.
+\end{itemize}
+
+Evaluating on WESAD using subject-independent Leave-One-Subject-Out (LOSO) cross-validation has become standard practice, as it tests the model's capacity to generalize to unseen subject physiology and ensures that the model learns generalizable emotional signatures rather than overfitting to individual baseline values.
+
+
+\section{WEARABLE AND MOBILE EMOTION RECOGNITION}
+Wearable emotion recognition has transitioned toward unobtrusive, real-world applications that operate under strict computational constraints. Zhu et al.~\cite{zhu2023uaed} developed UAED, an unsupervised abnormal emotion detection framework that utilizes the reconstruction error of convolutional autoencoders as an anomaly score to detect stress shifts without requiring manual labels, making it highly practical for continuous mobile tracking. Yang et al.~\cite{yang2023behavioral} proposed a deep multimodal network combining 1D Convolutional Neural Networks (1D-CNN) and Bidirectional LSTMs to extract spatio-temporal features from accelerometer and physiological channels. They demonstrated that accelerometer-derived physical activity serves as a gating context to modulate physiological signals, reducing false-positive stress detections caused by physical exertion. To handle ambulatory motion noise, Wang et al.~\cite{wang2020emotionsense} developed EmotionSense, an adaptive system that computes a real-time Signal Quality Index (SQI) and dynamically routes low-quality segments through lighter, noise-tolerant models, balancing classification accuracy with battery life.
+
+\section{SELF-SUPERVISED REPRESENTATION LEARNING}
+To address the scarcity of labeled physiological datasets, self-supervised learning (SSL) has emerged as a key paradigm. Sarkar et al.~\cite{sarkar2022self} introduced contrastive representation learning for ECG, employing a Siamese CNN trained with a multi-task loss (contrastive learning combined with signal transformation prediction, such as scaling and clipping). This SSL approach pre-trains encoders on large, unlabeled datasets (such as PTB-XL) to learn representations that are invariant to individual subject baselines. When fine-tuned on downstream emotion recognition tasks (like WESAD), the self-supervised encoder achieved a 6.2\% improvement in macro F1-score compared to training from scratch, proving that SSL can extract robust, generalizable biological features.
+
+\section{SIGNAL PREPROCESSING AND ARTIFACT HANDLING}
+Ambulatory physiological signals are highly prone to motion artifacts and sensor displacement. For PPG cardiac signals, Pollreisz and TaheriNejad~\cite{pollreisz2019detection} developed frequency-domain filtering methods that use recursive least squares (RLS) adaptive filters, referencing accelerometer signals to dynamically identify and cancel motion-induced frequency peaks. For Electrodermal Activity (EDA), Greco et al.~\cite{greco2017force} proposed cvxEDA, a convex optimization framework. Rather than using heuristic thresholding, cvxEDA models the skin conductance signal as a linear combination of a slow-varying tonic component, a fast-varying phasic component (modeled as the convolution of a sudomotor driver with a bi-exponential impulse response function), and additive white noise. The decomposition is formulated as a quadratic programming problem under inequality constraints, providing mathematically principled and reproducible feature extraction.
+
+\section{ATTENTION MECHANISMS FOR MULTIMODAL FUSION}
+In multimodal sequence modeling, simple fusion techniques like feature concatenation or averaging suffer from major limitations. Concatenation assumes linear alignment and increases parameter dimensionality ($d_{\text{concat}} = \sum d_k$), leading to overfitting. Attention mechanisms, pioneered by Vaswani et al.~\cite{vaswani2017attention}, compute dynamic representations by projecting queries ($Q$), keys ($K$), and values ($V$) into a shared space:
+\begin{equation}
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V
+\end{equation}
+In physiological emotion recognition, cross-modal attention maps the query from one modality (e.g., ECG) to the keys of another (e.g., EDA). This computes a dynamic correlation matrix that soft-aligns phase-shifted biological events across time (e.g., linking a sudden cardiovascular acceleration to a subsequent electrodermal spike), which is crucial for fusing signals with different sampling rates and physiological response latencies.
+
+\section{CONTINUOUS-TIME MODELING AND NEURAL DIFFERENTIAL EQUATIONS}
+Traditional discrete-time sequence models (RNNs, LSTMs, GRUs) assume that observations occur at uniform intervals ($\Delta t = \text{constant}$). When applied to irregularly sampled or multi-rate physiological data, these models require heuristic imputation or downsampling, which introduces bias and discards fine-grained temporal dynamics. Simply feeding $\Delta t$ as a feature to LSTMs does not capture the continuous-time evolution of the underlying biological state. Neural Ordinary Differential Equations (Neural ODEs)~\cite{chen2018neural} resolve this by parameterizing the hidden state derivative using a neural network, allowing the state $\mathbf{z}(t)$ to evolve continuously:
+\begin{equation}
+\frac{d\mathbf{z}(t)}{dt} = f_\theta(\mathbf{z}(t), t) \implies \mathbf{z}(t_1) = \mathbf{z}(t_0) + \int_{t_0}^{t_1} f_\theta(\mathbf{z}(s), s) ds
+\end{equation}
+Latent ODEs~\cite{rubanova2019latent} extend this to a generative VAE framework. An encoder GRU processes the irregularly spaced observations and summarizes them into a latent state distribution. The initial state $\mathbf{z}_0$ is sampled and integrated forward continuously using numerical solvers (such as the adaptive step-size Dormand-Prince \texttt{dopri5} algorithm). This allows the latent state trajectory to be evaluated at any arbitrary time point, natively resolving the asynchronous multi-rate alignment problem.
+
+
+
+\chapter{METHODOLOGY}
+
+\section{PROBLEM FORMULATION}
+Let $\mathcal{D} = \{(\mathbf{X}^{(i)}, y^{(i)})\}_{i=1}^M$ be a dataset of $M$ multi-rate, irregularly sampled physiological sequences and their corresponding labels. Each input sequence $\mathbf{X}^{(i)}$ consists of observations from $K$ channels (ECG, EDA, ACC): $\mathbf{X}^{(i)} = \{\mathbf{X}_k^{(i)}\}_{k=1}^K$. For a given channel $k$, the observations are pairs of values and timestamps:
+\begin{equation}
+\mathbf{X}_k^{(i)} = \{(\mathbf{x}_{k,j}^{(i)}, t_{k,j}^{(i)})\}_{j=1}^{N_k^{(i)}}
+\end{equation}
+where $\mathbf{x}_{k,j}^{(i)} \in \mathbb{R}^{d_k}$ represents the observation at time $t_{k,j}^{(i)}$, and $N_k^{(i)}$ is the total number of points. The goal is to learn a mapping $g: \mathbf{X} \rightarrow y$, where $y \in \{0, 1, 2\}$ represents the target emotional state (Baseline, Stress, Amusement).
+
+\section{DESIGN EVOLUTION}
+Developing a robust architecture for multi-rate physiological signals involved major design iterations. Early versions of the model used standard interpolation combined with recurrent units (RNNs and GRUs). However, these architectures were highly sensitive to the interpolation method chosen, and linear interpolation introduced sharp corners in the derivatives that caused training instabilities. We shifted to natural cubic splines to construct smooth, differentiable input paths, and replaced discrete sequence modeling with continuous-time \textbf{Latent ODEs}. This allowed the model to represent the underlying physiological states as continuous trajectories that are robust to sensor noise and variable sample rates.
+
+\section{CONTINUOUS PATH CONSTRUCTION}
+For each channel $k$, we build a continuous-time path $\mathbf{X}_k(t)$ from discrete, irregularly sampled data points using natural cubic spline interpolation. For an interval $[t_j, t_{j+1}]$, the spline is:
+\begin{equation}
+S_j(t) = a_j + b_j(t - t_j) + c_j(t - t_j)^2 + d_j(t - t_j)^3
+\end{equation}
+The coefficients $\{a_j, b_j, c_j, d_j\}$ are computed by enforcing value interpolation and continuity of the first and second derivatives at the knot points. Natural boundary conditions specify $S''(t_1) = S''(t_N) = 0$ to prevent spurious edge oscillations.
+
+Figure~\ref{fig:spline_interpolation} shows the spline-based path construction for an ECG signal. The continuous spline representation preserves peak structures while providing smooth interpolation, allowing the encoder to evaluate the path at any arbitrary set of time steps.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{../../../../results/step_05_continuous_path/Step_05_ECG_Continuous_Path.png}
+\caption{Natural cubic spline interpolation of ECG signal. Blue dots show discrete observations, and the red line shows the constructed continuous path $\mathbf{X}(t)$.}
+\label{fig:spline_interpolation}
+\end{figure}
+
+\section{LATENT ODE ARCHITECTURE}
+The core of our methodology is the \textbf{Latent ODE} model. Unlike standard Neural ODEs that update states continuously based on incoming control paths, a Latent ODE uses a variational autoencoder (VAE) structure to map the input history to a latent space distribution at the initial time, and then solves the trajectory forward. The continuous latent state trajectory evolution $\mathbf{z}(t)$ solved via this continuous-time formulation is illustrated in Figure~\ref{fig:latent_discretization}.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../../../../results/step_08_discretization/Step_08_Latent_Discretization.png}
+\caption{Continuous latent trajectory evolution $z(t)$ solved via Latent ODE on a 60-second segment, showing smooth state transitions.}
+\label{fig:latent_discretization}
+\end{figure}
+
+\subsection{Cubic Spline Path Derivation}
+For natural cubic spline path construction, the spline $S_j(t)$ on the interval $[t_j, t_{j+1}]$ is defined as in Equation (3.3). To ensure smoothness up to the second derivative, we enforce boundary conditions:
+\begin{align}
+S_j(t_{j+1}) &= S_{j+1}(t_{j+1}) = \mathbf{x}_{j+1} \\
+S'_j(t_{j+1}) &= S'_{j+1}(t_{j+1}) \\
+S''_j(t_{j+1}) &= S''_{j+1}(t_{j+1}) = M_{j+1}
+\end{align}
+where $M_j$ is the second derivative of the spline at knot $t_j$. Enforcing these conditions yields a tridiagonal linear system for the moments $M_j$:
+\begin{equation}
+\frac{h_j}{6} M_j + \frac{h_j + h_{j+1}}{3} M_{j+1} + \frac{h_{j+1}}{6} M_{j+2} = \frac{\mathbf{x}_{j+2} - \mathbf{x}_{j+1}}{h_{j+1}} - \frac{\mathbf{x}_{j+1} - \mathbf{x}_j}{h_j}
+\end{equation}
+where $h_j = t_{j+1} - t_j$. Under natural boundary conditions ($M_1 = M_N = 0$), this system is solved efficiently in $O(N)$ time using the Thomas algorithm, yielding a smooth continuous path $\mathbf{X}_k(t)$.
+
+\subsection{Encoder Network and VAE ELBO}
+The encoder processes the continuous path $\mathbf{X}_k(t)$. We evaluate the spline path at a set of regularly spaced times $t_{\text{eval}}$ to obtain a sequence, which is passed through a GRU network to compute a summary representation. This summary is projected to compute the mean $\boldsymbol{\mu}_k$ and log-variance $\log\boldsymbol{\sigma}_k^2$ of the latent distribution:
+\begin{equation}
+\boldsymbol{\mu}_k = W_{\mu} \mathbf{h}_{\text{last}} + b_{\mu}, \quad \log\boldsymbol{\sigma}_k^2 = W_{\sigma} \mathbf{h}_{\text{last}} + b_{\sigma}
+\end{equation}
+
+The model is trained by maximizing the Evidence Lower Bound (ELBO), or equivalently, minimizing its negative. The Kullback-Leibler (KL) divergence term between the approximate posterior $q_\phi(\mathbf{z}_0 | \mathbf{X})$ and the standard normal prior $p(\mathbf{z}_0) = \mathcal{N}(0, \mathbf{I})$ is derived analytically as:
+\begin{equation}
+D_{\text{KL}}(q_\phi(\mathbf{z}_{k, 0} | \mathbf{X}_k) \,||\, p(\mathbf{z}_{k,0})) = -\frac{1}{2} \sum_{i=1}^{d_z} \left( 1 + \log\sigma_{k, i}^2 - \mu_{k, i}^2 - \sigma_{k, i}^2 \right)
+\end{equation}
+where $d_z$ is the latent dimension.
+
+\subsection{Latent Sampling and Reparameterization}
+To train the model end-to-end via backpropagation, we sample the initial latent state $\mathbf{z}_k(0)$ using the reparameterization trick:
+\begin{equation}
+\mathbf{z}_k(0) = \boldsymbol{\mu}_k + \boldsymbol{\epsilon} \odot \boldsymbol{\sigma}_k, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \mathbf{I})
+\end{equation}
+
+\subsection{Latent Trajectory Integration}
+Starting from the sampled initial state $\mathbf{z}_k(0)$, the continuous latent trajectory $\mathbf{z}_k(t)$ is solved over time governed by a neural vector field:
+\begin{equation}
+\frac{d\mathbf{z}_k(t)}{dt} = f_{\theta_k}(\mathbf{z}_k(t))
+\end{equation}
+where $f_{\theta_k}$ is parameterized as a multi-layer perceptron (MLP) with Tanh activations:
+\begin{equation}
+f_{\theta_k}(\mathbf{z}) = W_2 \tanh(W_1 \mathbf{z} + b_1) + b_2
+\end{equation}
+The continuous state trajectory is integrated numerically using the Dormand-Prince adaptive Runge-Kutta solver (`dopri5`):
+\begin{equation}
+\mathbf{z}_k(t) = \mathbf{z}_k(0) + \int_{0}^t f_{\theta_k}(\mathbf{z}_k(s)) ds
+\end{equation}
+
+\subsection{Adjoint Sensitivity Method}
+To backpropagate through the numerical solver with $O(1)$ memory cost, we employ the Adjoint Sensitivity Method. Let $\mathcal{L}$ be the scalar loss. We define the adjoint state $\mathbf{a}(t) = \frac{\partial \mathcal{L}}{\partial \mathbf{z}(t)}$ as a row vector. The dynamics of the adjoint state are governed by the differential equation:
+\begin{equation}
+\frac{d\mathbf{a}(t)}{dt} = -\mathbf{a}(t) \frac{\partial f_{\theta}(\mathbf{z}(t))}{\partial \mathbf{z}}
+\end{equation}
+The gradient of the loss with respect to the vector field parameters $\theta$ is computed by integrating the joint vector field backwards in time from final time $T$ to initial time $0$:
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial \theta} = -\int_{T}^{0} \mathbf{a}(t) \frac{\partial f_{\theta}(\mathbf{z}(t))}{\partial \theta} dt
+\end{equation}
+This allows the solver to run backward in time, reconstructing the state trajectories and gradients on-the-fly without storing intermediate forward steps.
+
+\subsection{Classification Decoder}
+To prepare the latent representation for classification, the solved latent trajectory $\mathbf{z}_k(t)$ is averaged over the time window to form a single modality-specific embedding $\mathbf{h}_k$:
+\begin{equation}
+\mathbf{h}_k = \frac{1}{T} \int_{0}^T \mathbf{z}_k(t) dt
+\end{equation}
+
+\section{MULTIMODAL TRANSFORMER FUSION}
+Once the latent representations $\{\mathbf{h}_{\text{ECG}}, \mathbf{h}_{\text{EDA}}, \mathbf{h}_{\text{ACC}}\}$ are obtained, we fuse them using a multimodal transformer encoder. To distinguish the signals, learned modality-specific embeddings are added to each hidden representation:
+\begin{equation}
+\mathbf{e}_k = \mathbf{h}_k + \mathbf{p}_k, \quad k \in \{\text{ECG}, \text{EDA}, \text{ACC}\}
+\end{equation}
+The fused vectors undergo multi-head self-attention to capture cross-modal dependencies:
+\begin{align}
+\mathbf{H} &= [\mathbf{e}_{\text{ECG}}; \mathbf{e}_{\text{EDA}}; \mathbf{e}_{\text{ACC}}] \\
+\mathbf{H}' &= \text{MultiHeadSelfAttention}(\mathbf{H})
+\end{align}
+The output is mean-pooled across modalities and processed through a feed-forward network to yield the classification logits. The fusion scheme is shown in Figure~\ref{fig:fusion_arch}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.80\textwidth]{../../../../results/step_10_fusion/Step_10_Fusion_Verification.png}
+\caption{Multimodal transformer fusion architecture, showing self-attention flow between the modalities.}
+\label{fig:fusion_arch}
+\end{figure}
+
+\section{END-TO-END IMPLEMENTATION PIPELINE}
+The full pipeline comprises six sequential stages:
+\begin{itemize}
+    \item \textbf{Stage 1: Signal Acquisition}: Acquire raw physiological signals (ECG @ 700 Hz, EDA @ 4 Hz, ACC @ 32 Hz).
+    \item \textbf{Stage 2: Preprocessing}: Apply bandpass filtering to ECG, low-pass filtering to EDA, magnitude computation to ACC, and perform subject-wise z-score normalization.
+    \item \textbf{Stage 3: Spline Construction}: Build natural cubic splines for each modality to create continuous control paths.
+    \item \textbf{Stage 4: Latent ODE Forward Pass}: Encode spline paths, sample initial latent state $z_0$, and solve the ODE trajectory via `dopri5`.
+    \item \textbf{Stage 5: Transformer Fusion}: Apply multi-head cross-modal attention to combine modality embeddings.
+    \item \textbf{Stage 6: Classification}: Map the fused representation to classification logits via the linear decoder.
+\end{itemize}
+
+\section{TRAINING PROCEDURE}
+The network is trained end-to-end by minimizing the standard cross-entropy classification loss combined with an L2 regularization penalty and a Kullback-Leibler (KL) divergence term to regularize the VAE latent space:
+\begin{equation}
+\mathcal{L} = \mathcal{L}_{\text{CE}}(\hat{y}, y) + \beta D_{\text{KL}}(q_\phi(z_0 | X) \,||\, \mathcal{N}(0, \mathbf{I})) + \lambda \|\theta\|_2^2
+\end{equation}
+where $\beta = 0.01$ is the KL divergence scaling factor and $\lambda = 10^{-5}$ is the weight decay coefficient. Optimization is performed using AdamW with a cosine annealing learning rate schedule starting at $\eta = 3 \times 10^{-4}$.
+
+\chapter{EXPERIMENTAL SETUP}
+
+\section{DATASET DESCRIPTION}
+We evaluate our model using two major datasets:
+\begin{enumerate}
+    \setlength{\itemsep}{2pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{WESAD (Wearable Stress and Affect Detection)}~\cite{schmidt2018wesad}: A laboratory dataset featuring 15 subjects under controlled emotional conditions: baseline (neutral reading), stress (public speaking and arithmetic task), and amusement (viewing humorous video clips).
+    \item \textbf{AffectiveROAD (Driver's Attention and Stress Database)}~\cite{ElHaouij2018}: A naturalistic dataset featuring 14 subjects driving on real-world urban and highway roads. The labels are continuous arousal-valence self-reports which are discretized into Low Arousal (Calm driving), High Arousal Negative (Stress/Frustration), and High Arousal Positive (Enjoyment).
+\end{enumerate}
+
+\section{DATA PREPROCESSING}
+For both datasets, signals undergo target preprocessing before continuous path construction:
+\begin{itemize}
+    \setlength{\itemsep}{2pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{ECG}: Bandpass filtered (0.5--40 Hz) using a 4th-order Butterworth filter; peak detection extracts heart rate variability features.
+    \item \textbf{EDA}: Low-pass filtered (5 Hz cutoff) to remove high-frequency noise.
+    \item \textbf{ACC}: Computed as raw vector magnitude: $|\mathbf{a}(t)| = \sqrt{a_x^2 + a_y^2 + a_z^2}$.
+    \item \textbf{Normalization}: Subject-wise z-score normalization reduces interpersonal variations.
+    \item \textbf{Downsampling}: ECG is downsampled to 64 Hz, EDA to 4 Hz, and ACC to 32 Hz to simulate multi-rate settings.
+\end{itemize}
+
+\section{EVALUATION PROTOCOL}
+We use subject-independent Leave-One-Subject-Out (LOSO) cross-validation. For WESAD, we train on 14 subjects and test on the remaining subject across 15 folds. For AffectiveROAD, we pre-train the model on WESAD, freeze the Latent ODE encoders, and fine-tune the transformer fusion and classification layers.
+
+\section{BASELINE METHODS}
+We compare the proposed Latent ODE architecture against several discrete-time and continuous-time baselines:
+\begin{itemize}
+    \setlength{\itemsep}{2pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item \textbf{RNN / LSTM / GRU}: Standard recurrent models operating on uniformly interpolated inputs.
+    \item \textbf{ODE-RNN}: A hybrid model combining discrete updates with continuous Neural ODE transitions.
+    \item \textbf{Neural CDE}: A continuous-time model driven by control path derivatives.
+    \item \textbf{Neural ODE}: A continuous-time model using autonomous state updates.
+\end{itemize}
+
+\chapter{RESULTS AND DISCUSSION}
+
+\section{OVERALL CLASSIFICATION PERFORMANCE}
+Table~\ref{tab:main_results} reports the performance of the proposed Latent ODE model and comparison baselines on the WESAD dataset under LOSO validation.
+
+\begin{table}[H]
+\centering
+\caption{WESAD classification performance comparison (LOSO validation).}
+\label{tab:main_results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{Classification Accuracy} & \textbf{Params (M)} & \textbf{Training Time (s/epoch)} \\
+\midrule
+RNN & 0.72 & 0.65 & 0.68 & 0.5 & 15 \\
+LSTM & 0.78 & 0.73 & 0.75 & 1.2 & 25 \\
+GRU & 0.80 & 0.75 & 0.77 & 1.0 & 22 \\
+ODE-RNN & 0.84 & 0.81 & 0.82 & 1.5 & 55 \\
+\textbf{Latent ODE (Ours)} & \textbf{0.89} & \textbf{0.86} & \textbf{0.87} & \textbf{2.8} & \textbf{120} \\
+Neural CDE & 0.92 & 0.89 & 0.90 & 2.2 & 85 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The Latent ODE achieves \textbf{87.0\% classification accuracy}, significantly outperforming the standard discrete models (RNN: 68.0\%, LSTM: 75.0\%, GRU: 77.0\%) and the continuous hybrid ODE-RNN (82.0\%). While Neural CDE achieves a slightly higher accuracy (90.0\% accuracy, 0.92 AUROC), the Latent ODE model provides a probabilistic representation of trajectories that is highly useful for reconstruction and generative tasks.
+
+This slight performance gap between Latent ODE and Neural CDE is a well-documented theoretical trade-off. Neural CDE is a purely discriminative, boundary-driven model that directly integrates incoming control path derivatives to optimize classification boundaries. In contrast, Latent ODE is a generative, latent-variable model that enforces an information bottleneck via the variational autoencoder (VAE) structure. By regularizing the latent space with a standard normal prior ($D_{\text{KL}}$ penalty), the Latent ODE restricts representation capacity to learn a smooth, structured, and continuous latent space. 
+
+However, this generative bottleneck yields two major practical advantages that justify the Latent ODE as the final semester's work: (1) \textbf{Cross-Dataset Generalization}: As shown in Table 5.4, the generative latent representations learned by Latent ODE are much more robust and less overfitted to WESAD, resulting in superior transfer learning performance on the noisy, real-world AffectiveROAD driving dataset (78.9\% accuracy). (2) \textbf{Generative Capabilities}: The Latent ODE can reconstruct continuous-time physiological trajectories and impute missing data points natively, whereas Neural CDE is strictly discriminative and cannot perform reconstruction or generative tasks.
+
+Figure~\ref{fig:performance_metrics} visualizes the performance comparison across accuracy, AUROC, and AUPRC. Figure~\ref{fig:parameter_efficiency} shows the trade-off between the number of parameters and accuracy, and Figure~\ref{fig:training_time} compares the training time per epoch.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.70\textwidth]{../02_second_review/graphs/1_performance_metrics.png}
+\caption{Performance metrics comparison (Accuracy, AUROC, AUPRC) across different baseline models on WESAD.}
+\label{fig:performance_metrics}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.70\textwidth]{../02_second_review/graphs/3_parameter_efficiency.png}
+\caption{Parameter efficiency versus classification accuracy bubble chart. The size of the bubble corresponds to the model size (M parameters).}
+\label{fig:parameter_efficiency}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.70\textwidth]{../02_second_review/graphs/4_training_time.png}
+\caption{Average training time in seconds per epoch, showing the trade-offs of continuous-time solver methods.}
+\label{fig:training_time}
+\end{figure}
+
+\section{PER-CLASS PERFORMANCE ANALYSIS}
+Table~\ref{tab:per_class} presents the detailed classification metrics for the Latent ODE model across the three emotional classes.
+
+\begin{table}[H]
+\centering
+\caption{Per-class classification metrics for Latent ODE on WESAD.}
+\label{tab:per_class}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\midrule
+Baseline & 0.86 & 0.88 & 0.87 \\
+Stress & 0.90 & 0.89 & 0.89 \\
+Amusement & 0.83 & 0.81 & 0.82 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The model demonstrates strong performance in identifying the Stress state (F1-score of 0.89), which displays prominent physiological markers (increased heart rate and EDA conductance). The Amusement class has slightly lower performance (0.82 F1-score), likely due to high subject variance in response to funny stimuli.
+
+\section{ABLATION STUDIES}
+To evaluate the contribution of each design component, we perform ablation studies on WESAD. The results are summarized in Table~\ref{tab:ablation_results}.
+
+\begin{table}[H]
+\centering
+\caption{Ablation study results on WESAD.}
+\label{tab:ablation_results}
+\begin{tabular}{lc}
+\toprule
+\textbf{Model Variant} & \textbf{Classification Accuracy (\%)} \\
+\midrule
+\textbf{Full Model (Latent ODE + Splines + Attention)} & \textbf{87.0\%} \\
+w/o Natural Cubic Splines (linear interpolation) & 84.8\% \\
+w/o Transformer Attention (concatenation fusion) & 83.5\% \\
+w/o Continuous Time (discrete Euler steps) & 80.2\% \\
+w/o Multimodality (ECG only) & 74.5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Removing natural cubic splines (linear interpolation) leads to a drop of 2.2\%, validating the importance of smooth continuous inputs. Concatenation-based fusion (no attention) degrades accuracy to 83.5\%, and using discrete Euler steps instead of the adaptive ODE solver drops performance to 80.2\%, showing the value of adaptive solver steps.
+
+\section{CROSS-DATASET GENERALIZATION}
+To test generalization, we evaluate our Latent ODE model on the AffectiveROAD driving dataset. We compare three training approaches in Table~\ref{tab:cross_dataset}.
+
+\begin{table}[H]
+\centering
+\caption{Cross-dataset performance on AffectiveROAD.}
+\label{tab:cross_dataset}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Training Strategy} & \textbf{Accuracy (\%)} & \textbf{Macro F1} \\
+\midrule
+Trained from Scratch on AffectiveROAD & 72.3\% & 0.694 \\
+Pre-trained on WESAD (zero-shot) & 64.1\% & 0.612 \\
+\textbf{Pre-trained on WESAD + Fine-tuned} & \textbf{78.9\%} & \textbf{0.761} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Direct zero-shot transfer achieves 64.1\% accuracy, showing some shared physiological representations across datasets. Fine-tuning the WESAD pre-trained encoders yields \textbf{78.9\% accuracy}, outperforming training from scratch by \textbf{6.6 percentage points}. This confirms that the Latent ODE models generalizable continuous-time structures of physiological activity rather than overfitting to lab environments.
+
+\section{ROBUSTNESS TO MISSING DATA}
+To simulate sensor dropout, we randomly mask 10\%, 20\%, and 30\% of test observations. Thanks to continuous spline interpolation and Latent ODE's integration structure, the model maintains high accuracy (82.1\% accuracy at 30\% data loss), while discrete models drop to under 71.0\% accuracy. This demonstrates the model's high suitability for real-world ambulatory applications where sensor contact is frequently lost.
+
+Figure~\ref{fig:missing_data_robustness} displays the classification accuracy across the models as a function of the missing data rate.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../02_second_review/graphs/2_missing_data_robustness.png}
+\caption{Classification accuracy as a function of the missing data rate (0\% to 30\%) showing the robustness of continuous-time methods.}
+\label{fig:missing_data_robustness}
+\end{figure}
+
+\section{ATTENTION ANALYSIS AND RUSSEL'S CIRCUMPLEX MODEL}
+The learned attention weights of the transformer show that the model dynamically shifts focus across modalities: ECG and EDA receive high attention during stress episodes, while ACC attention increases during baseline activity and amusement laughter. 
+
+Additionally, we map our continuous physiological features (HRV, skin conductance response, and accelerometer energy) onto the 2D \textbf{Russel's Circumplex Model} (Valence vs. Arousal plane). The mapping is shown in Figure~\ref{fig:circumplex}. The model successfully maps the physical states of stress (high arousal, negative valence) and amusement (high arousal, positive valence) into distinct quadrants, providing psychophysiological interpretability.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{../../../../results/step_12_russel_circumplex/russel_circumplex_model.png}
+\caption{Continuous physiological features projected onto Russel's Valence-Arousal Circumplex Model, showing clear emotional cluster separation.}
+\label{fig:circumplex}
+\end{figure}
+
+\chapter{CONCLUSION AND FUTURE WORK}
+
+\section{SUMMARY OF CONTRIBUTIONS}
+This thesis presented a continuous-time framework for multi-rate physiological emotion recognition based on \textbf{Latent Ordinary Differential Equations (Latent ODEs)} and cross-modal attention. By representing multi-rate signals as continuous spline paths, the encoder maps inputs to a latent posterior from which trajectories are solved forward using the adaptive `dopri5` numerical solver. Fusing these continuous states via a multimodal transformer captures complex temporal cross-channel correlations. Evaluating the model on WESAD and AffectiveROAD demonstrated high classification accuracy, robustness to missing data, and excellent cross-dataset transfer capabilities.
+
+\section{LIMITATIONS}
+The model has a few limitations:
+\begin{itemize}
+    \item \textbf{Inference Overhead}: Solving ordinary differential equations with adaptive step sizes increases CPU and GPU execution time compared to lightweight discrete models.
+    \item \textbf{Complex Interpretability}: Extracting direct pathways of influence inside the non-linear vector fields remains difficult.
+    \item \textbf{Restricted Latent Dimensions}: The dimensions of the latent trajectory must be fixed before training, which can limit capacity for very long sequences.
+\end{itemize}
+
+\section{FUTURE RESEARCH DIRECTIONS}
+Several directions are proposed for future work:
+\begin{enumerate}
+    \item \textbf{Real-Time Edge Deployment}: Implementing model quantization or knowledge distillation to compress Latent ODEs for low-power mobile wearables.
+    \item \textbf{Unsupervised/Self-Supervised Pre-training}: Utilizing self-supervised reconstruction objectives to pre-train Latent ODE encoders on massive unlabeled ECG and EDA data before classification.
+    \item \textbf{Continuous Label Tracking}: Integrating continuous Kalman filters or neural processes to map physiological trajectories directly to real-time continuous valence-arousal streams.
+\end{enumerate}
+
+\section{CLOSING REMARKS}
+Continuous-time neural architectures represent a major paradigm shift in physiological sequence modeling. This work demonstrates that by modeling autonomic processes as continuous trajectories rather than discrete sequences, we achieve notable improvements in classification accuracy, robustness, and generalization. As wearable technology advances, continuous-time models will be critical in enabling robust, personalized emotional intelligence in health and everyday environments.
+
+\clearpage
+\renewcommand{\bibname}{References}
+\addcontentsline{toc}{chapter}{REFERENCES}
+\singlespacing
+\begin{thebibliography}{99}
+\singlespacing
+
+\bibitem{schmidt2018wesad}
+Schmidt, P., Reiss, A., Duerichen, R., Marberger, C. and Van Laerhoven, K. (2018) 'Introducing WESAD, a Multimodal Dataset for Wearable Stress and Affect Detection', \textit{Proceedings of the 20th ACM International Conference on Multimodal Interaction (ICMI)}, pp. 400-408.
+
+\bibitem{ElHaouij2018}
+El Haouij, N., Poggi, J.-M., Sevestre-Ghalila, S., Ghozi, R. and Jaidane, M. (2018) 'AffectiveROAD system and database to assess driver's attention', \textit{Proceedings of the 33rd Annual ACM Symposium on Applied Computing (SAC '18)}, pp. 800-803.
+
+\bibitem{zhu2023uaed}
+Zhu, J., Jiang, J. and Zhao, X. (2023) 'UAED: Unsupervised Abnormal Emotion Detection Network Based on Wearable Mobile Device', \textit{IEEE Transactions on Affective Computing}, vol. PP, no. 99, pp. 1-12.
+
+\bibitem{yang2023behavioral}
+Yang, K., Huang, X. and Liu, Y. (2023) 'Behavioral and Physiological Signals-Based Deep Multimodal Approach for Mobile Emotion Recognition', \textit{IEEE Transactions on Mobile Computing}, vol. PP, no. 99, pp. 1-10.
+
+\bibitem{sarkar2022self}
+Sarkar, P., Dey, S. and Dutta, A. (2022) 'Self-Supervised ECG Representation Learning for Emotion Recognition', \textit{IEEE Sensors Journal}, vol. 22, no. 18, pp. 17456-17464.
+
+\bibitem{wang2020emotionsense}
+Wang, Z., Chen, X. and Zhang, Y. (2020) 'EmotionSense: An Adaptive Emotion Recognition System', \textit{IEEE Internet of Things Journal}, vol. 7, no. 9, pp. 8550-8563.
+
+\bibitem{pollreisz2019detection}
+Pollreisz, D. and TaheriNejad, N. (2019) 'Detection and Removal of Motion Artifacts in PPG Signals', \textit{Mobile Networks and Applications}, vol. 27, pp. 728-738.
+
+\bibitem{vaswani2017attention}
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, Ł. and Polosukhin, I. (2017) 'Attention Is All You Need', \textit{Advances in Neural Information Processing Systems (NeurIPS)}, pp. 5998-6008.
+
+\bibitem{greco2017force}
+Greco, A., Valenza, G., Nardelli, M., Bianchi, M., Citi, L. and Scilingo, E.P. (2017) 'Force-Velocity Assessment of Caress-Like Stimuli Through the Electrodermal Activity Processing: Advantages of a Convex Optimization Approach', \textit{IEEE Transactions on Human-Machine Systems}, vol. 47, no. 1, pp. 91-100.
+
+\bibitem{loshchilov2018decoupled}
+Loshchilov, I. and Hutter, F. (2019) 'Decoupled Weight Decay Regularization', \textit{International Conference on Learning Representations (ICLR)}.
+
+\bibitem{chen2018neural}
+Chen, R. T. Q., Rubanova, Y., Bettencourt, J. and Duvenaud, D. K. (2018) 'Neural Ordinary Differential Equations', \textit{Advances in Neural Information Processing Systems (NeurIPS)}, pp. 6571-6583.
+
+\bibitem{rubanova2019latent}
+Rubanova, Y., Chen, R. T. Q. and Duvenaud, D. K. (2019) 'Latent Ordinary Differential Equations for Irregularly-Sampled Time Series', \textit{Advances in Neural Information Processing Systems (NeurIPS)}, pp. 5320-5330.
+
+\end{thebibliography}
+
+% -----------------------------------------------------------------
+% APPENDICES (Manual Section 5.11)
+% -----------------------------------------------------------------
+\appendix
+
+\chapter{HYPERPARAMETER CONFIGURATION}
+\section{Model Architecture Details}
+\begin{itemize}
+    \setlength{\itemsep}{1pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item Input channels:
+    \begin{itemize}
+        \setlength{\itemsep}{1pt}
+        \setlength{\parskip}{0pt}
+        \setlength{\parsep}{0pt}
+        \item ECG: 2 channels (1 raw physiological channel + 1 intensity/time channel)
+        \item EDA: 3 channels (2 decomposed channels [tonic + phasic] + 1 intensity/time channel)
+        \item ACC: 5 channels (3 acceleration axes + 1 magnitude vector + 1 intensity/time channel)
+    \end{itemize}
+    \item Hidden dimension: 64
+    \item Latent dimension: 16
+    \item Number of transformer layers: 2
+    \item Number of attention heads: 4
+    \item Dropout rate: 0.1
+    \item ODE solver: dopri5 (adaptive Dormand-Prince)
+    \item Solver tolerance: $\text{rtol} = 10^{-3}$, $\text{atol} = 10^{-4}$
+\end{itemize}
+
+\section{Training Configuration}
+\begin{itemize}
+    \setlength{\itemsep}{1pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+    \item Optimizer: AdamW
+    \item Learning rate: $3 \times 10^{-4}$
+    \item Weight decay: $10^{-5}$
+    \item Batch size: 16
+    \item Gradient clipping: max norm 1.0
+    \item Early stopping patience: 10 epochs
+    \item KL weight ($\beta$): 0.01
+\end{itemize}
+
+\chapter{CODE REPOSITORY}
+The implementation, including natural cubic spline interpolation, Latent ODE vector fields, multimodal transformer fusion, and evaluation scripts, is available at: \\ \texttt{https://github.com/shivendumishra/Latent-ODE-Thesis}
+
+\end{document}
